@@ -65,7 +65,15 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function () {
                     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                        alert(xmlhttp.responseText);
+                        var obj = JSON.parse(xmlhttp.responseText);
+                        console.log(obj);
+                        var sel = document.getElementsByClassName("dropdown")[0];
+                        for (var gfid in obj) {
+                            var el = document.createElement("div");
+                            var el_t = document.createTextNode(gfid);
+                            el.appendChild(el_t);
+                            sel.appendChild(el);
+                        }
                     }
                 }
                 xmlhttp.open("GET", "http://127.0.0.1:5000/updateDashboard", true);
@@ -109,13 +117,6 @@
     <body>
         <div class = "container p-3 my-5 bg-default text-black">
             <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown
-                <!-- <span class="caret"></span></button> -->
-                <ul class="dropdown-menu">
-                    <li><a href="#">DUMMY</a></li>
-                    <li><a href="#">DUMMY</a></li>
-                    <li><a href="#">DUMMY</a></li>
-                </ul>
             </div>
             <br><br><br><br>
             
