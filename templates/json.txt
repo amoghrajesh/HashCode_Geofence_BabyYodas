@@ -1,0 +1,56 @@
+{
+    lat : [],
+    long : []
+}
+
+{
+    type : polygon,
+    coordinates : [
+        [lat, long]
+    ]
+}
+||
+{
+    type : circle,
+    coordinates : [
+        [centre, rad]
+    ]
+}
+
+Phase 1 - Gmaps to Json
+Phase 2 - Json picked to backend
+Phase 3 - backend functionalities through db
+
+To do this we need to check if `ci` is within `GFj`
+{
+    'GF1': [c1, c2],
+    'Gf2' : []
+}
+
+
+class ci{
+    getPos(){
+
+    }
+}
+
+Master{
+    
+
+}
+
+ci.py
+getPos(){
+    return [lat, lon]
+}
+
+register(){
+
+}
+
+
+Hashcode
+ -geofence_fe
+    (Aravind + Amogh)
+ -geofence_be
+    (Amit + Siddhant)
