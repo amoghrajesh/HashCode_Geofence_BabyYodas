@@ -1,5 +1,12 @@
 <html>
     <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <style>
+            .container{
+                margin-top:100px;
+            }
+        </style>
+        
         <script>
             function processLogin(){
                 xhr = new XMLHttpRequest();
@@ -19,8 +26,20 @@
             }
         </script>
     </head>
-    <body>
-        <input type="text" name="username" id="username">
-        <button onclick="processLogin()">Login</button>
+    <body>  
+        <div class="container p-3 my-5 bg-success text-white">
+            <h2>Basic Client Login</h2>
+            <form action="/action_page.php">
+              <div class="form-group">
+                <label for="username">Client ID:</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter Client ID" name="username">
+              </div>
+              <div class="form-group">
+                <label for="pwd">Password:</label>
+                <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pwd">
+              </div>
+              <button type="submit" class="btn btn-primary" onclick="processLogin()">Submit</button>
+            </form>
+          </div>
     </body>
 </html>
