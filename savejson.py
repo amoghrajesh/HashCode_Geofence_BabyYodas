@@ -22,21 +22,27 @@ def save():
     tosave['admin_id'] = req['admin_id']
     tosave['type'] = req['type']
     tosave['radius'] = req['radius']
+    tosave['geof_id'] = req['geof_id']
 
-    latitude = []
-    longitude = []
-    locations = x = ast.literal_eval(req['locations'])
-    # print(locations, type(locations))
+    if req['type'] != "circle":
+        latitude = []
+        longitude = []
+        locations = ast.literal_eval(req['locations'])
+        locations = list(locations)
+        # print(locations, type(locations))
 
-    for loc in locations:
-        latitude.append(loc[0])
-        longitude.append(loc[1])
-    
-    tosave['latitudes'] = latitude
-    tosave['longitudes'] = longitude
+        for loc in locations:
+            latitude.append(loc[0])
+            longitude.append(loc[1])
+        
+        tosave['latitudes'] = latitude
+        tosave['longitudes'] = longitude
+    else:
+        tosave['latitudes'] = req['latitude']
+        tosave['longitudes'] = req['longitude']
 
-    with open("common_resources/sample.json", "w") as outfile: 
-        outfile.write(json.dumps(tosave))
+    with open("common_resources/sample.json", "a") as outfile: 
+        outfile.write("\n" + json.dumps(tosave))
 
     return "Saved Succesfully"
 
