@@ -1,5 +1,4 @@
 ########################################################
-                """geofence admin"""
 ########################################################
 
 ################ packages ##############################
@@ -35,7 +34,7 @@ class Admin(db.Model):
     owns_fences = db.Column(db.String(), nullable=False)
 
     def __init__(self, admin_id, owns_fences):
-        self.device_id = device_id
+        self.admin_id = admin_id
         self.owns_fences = owns_fences
 
 class Geofence(db.Model):
@@ -82,24 +81,33 @@ class Device(db.Model):
 
 db.create_all()
 
+# def message():
+#     return "hi"
+
 ################ functions ####################
 
 ################# apis ##########################
 
 @app.route('/')
-def home():
-	return render_template('login.html')
+def login():
+    return render_template('login.html')
+
+@app.route('/admin_dashboard')
+def adming_dashboard():
+    return render_template('admin_dashboard.html')
 
 @app.route('/processLogin', methods=['POST'])
 def processLogin():
-    admin_id = request.form['admin_id']
+    # print("In here")
+    req = request.get_json()
+    admin_id = req['client_id']
     session['current_user'] = admin_id
     session['user_available'] = True
-    quer_res = db.session.query(Admin).filter_by(admin_id = admin_id)
+    quer_res = db.session.query(Admin).filter_by(admin_id = admin_id).first()
     ret = {}
     ret['redirecturl'] = '/dashboard'
-    if(quer_res.scalar() is None):
-        reg = Admin(admin_id,"")
+    if(quer_res is None):
+        reg = Admin(admin_id, "admin")
         db.session.add(reg)
         db.session.commit()
     ret['msg'] = "Successfully created!"
@@ -107,60 +115,61 @@ def processLogin():
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
+    print(session['current_user'])
     if(session['user_available']):
-	    return render_template('dashboard.html')
+	    return render_template('subscribe.html')
     return redirect(url_for('logout'))
 
 #Do rest/ajax on this
-@app.route('/updateDashboard', methods=['GET'])
-def processDashboard():
-    if(session['user_available']):
-        resu = db.session.query(Geofence).filter_by(admin_id=session['current_user'])
-        ret = {}
-        for row in resu:
-            devices = row['joined_devices'].split('#')
-            for device_id in devices:
-                #resp = db.session.query(Device).filter_by(device_id=device_id)    
-                #ping client for location
-                (lat, lon) = pingClient(device_id)
-                ###########################################check lat, long #########################
-                (status, dist, coords) = GetStatus(row['type'], row['centroid'], row['latitudes'], row['longitudes'], row['boundary_buffer'], (lat, lon), row['radius'])
-                if status==1:
-                    dist = -dist
-                ret[resu['geof_id']].append(device_id, status, dist, list(coords))
-        return jsonify(ret)
-    return redirect(url_for('logout'))
+# @app.route('/updateDashboard', methods=['GET'])
+# def processDashboard():
+#     if(session['user_available']):
+#         resu = db.session.query(Geofence).filter_by(admin_id=session['current_user'])
+#         ret = {}
+#         for row in resu:
+#             devices = row['joined_devices'].split('#')
+#             for device_id in devices:
+#                 #resp = db.session.query(Device).filter_by(device_id=device_id)    
+#                 #ping client for location
+#                 (lat, lon) = pingClient(device_id)
+#                 ###########################################check lat, long #########################
+#                 (status, dist, coords) = GetStatus(row['type'], row['centroid'], row['latitudes'], row['longitudes'], row['boundary_buffer'], (lat, lon), row['radius'])
+#                 if status==1:
+#                     dist = -dist
+#                 ret[resu['geof_id']].append([device_id, status, dist, list(coords)])
+#         return jsonify(ret)
+#     return redirect(url_for('logout'))
 
 @app.route('/createGfence', methods=['GET'])
 def createGfence():
     if(session['user_available']):
-	    return render_template('geof.html')
+	    return render_template('gmap.html')
     return redirect(url_for('logout'))
 
-@app.route('/processCreateGfence', methods=['POST'])
-def processCreateGfence():
-    if(session['user_available']):
-        ret = {}
-        admin_id = (request.form['admin_id']).strip()
-        geof_id = (request.form['geof_id']).strip()
-        shape = (request.form['type']).strip()
-        radius = (request.form['radius']).strip()
-        ##############################check what type
-        latitudes = request.form['latitudes']
-        longitudes = request.form['longitudes']
-        quer_res = db.session.query(Geofence).filter_by(geof_id = geof_id)
-        if(quer_res.scalar() is None):
-            #compute centroid and buffer distance
-            centroid = Centroid(shape,latitudes,longitudes,radius)
-            buffer_dist = CalculateBufferDistance(shape,latitudes,longitudes,radius)
-            #################################check type of lat and long before join
-            reg = Geofence(admin_id, geof_id, shape, radius, centroid, "#".join(latitudes), "#".join(longitudes), "", buffer_dist)
-            db.session.add(reg)
-            db.session.commit()
-        else:
-            return jsonify({'error' : 'Fence already exists !'}) 
+# @app.route('/processCreateGfence', methods=['POST'])
+# def processCreateGfence():
+#     if(session['user_available']):
+#         ret = {}
+#         admin_id = (request.form['admin_id']).strip()
+#         geof_id = (request.form['geof_id']).strip()
+#         shape = (request.form['type']).strip()
+#         radius = (request.form['radius']).strip()
+#         ##############################check what type
+#         latitudes = request.form['latitudes']
+#         longitudes = request.form['longitudes']
+#         quer_res = db.session.query(Geofence).filter_by(geof_id = geof_id)
+#         if(quer_res.scalar() is None):
+#             #compute centroid and buffer distance
+#             centroid = Centroid(shape,latitudes,longitudes,radius)
+#             buffer_dist = CalculateBufferDistance(shape,latitudes,longitudes,radius)
+#             #################################check type of lat and long before join
+#             reg = Geofence(admin_id, geof_id, shape, radius, centroid, "#".join(latitudes), "#".join(longitudes), "", buffer_dist)
+#             db.session.add(reg)
+#             db.session.commit()
+#         else:
+#             return jsonify({'error' : 'Fence already exists !'}) 
 
-    return redirect(url_for('logout'))
+#     return redirect(url_for('logout'))
 
 @app.route('/logout')
 def logout():
@@ -168,6 +177,40 @@ def logout():
     session['user_available'] = False
     session['current_user'] = ""
     return redirect(url_for('home'))
+
+
+@app.route("/save", methods=["POST"])
+def save():
+    req = request.get_json()
+    # req = json.loads(req)
+    print(req)
+    tosave = dict()
+    tosave['admin_id'] = req['admin_id']
+    tosave['type'] = req['type']
+    tosave['radius'] = req['radius']
+    tosave['geof_id'] = req['geof_id']
+
+    if req['type'] != "circle":
+        latitude = []
+        longitude = []
+        locations = ast.literal_eval(req['locations'])
+        locations = list(locations)
+        # print(locations, type(locations))
+
+        for loc in locations:
+            latitude.append(loc[0])
+            longitude.append(loc[1])
+        
+        tosave['latitudes'] = latitude
+        tosave['longitudes'] = longitude
+    else:
+        tosave['latitudes'] = req['latitude']
+        tosave['longitudes'] = req['longitude']
+
+    with open("common_resources/sample.json", "a") as outfile: 
+        outfile.write("\n" + json.dumps(tosave))
+
+    return "Saved Succesfully"
 
 """
 @app.route('/register', methods=['POST'])
@@ -177,8 +220,23 @@ def processCreateGfence():
         admin_id = (request.form['admin_id']).strip()
         geof_id = (request.form['geof_id']).strip()
         shape = (request.form['type']).strip()
+
 """
 
-if __name__ == '__main__':	
-	application.debug=True
-	application.run(port=9999)
+# @app.route('/ping', methods=["GET"])
+# def ping():
+#     def send():
+#         while 1:
+#             yield message()
+    
+#     return Response(send(), mimetype = "text/event-stream")
+
+@app.route('/health', methods=["POST"])
+def health():
+    req = request.get_json()
+    print(req)
+    return "healthy!"
+
+
+if __name__ == "__main__" :
+    app.run(debug=True)

@@ -24,17 +24,17 @@ app.config['SECRET_KEY'] = "client api"
 headers = {'Content-Type': 'application/json', 'Accept':'application/json'}
 session_options = {'autocommit':False, 'autoflush':False}
 
-ADMIN = "localhost:9999"
-PORT = "9998"
+ADMIN = "http://127.0.0.1:9999"
+PORT = "5000"
 
 ################# function ######################
 
 def get_location():
-    return [1,2]
+    return [12.93630640508769, 77.5337771162133]
 
 ################# apis ##########################
 
-@app.route('/ping')
+@app.route('/ping', methods=['POST'])
 def getLocation():
     req = request.get_json()
     loc = get_location()
@@ -47,7 +47,8 @@ def home():
 
 @app.route('/processLogin', methods=['POST'])
 def processLogin():
-    device_id = request.form['device_id']
+    req = request.get_json()
+    device_id = req['client_id']
     session['current_user'] = device_id
     session['user_available'] = True
     location = get_location()
@@ -56,17 +57,17 @@ def processLogin():
                 'port': PORT,
                 'location' : location
               }
-    response = (requests.post(ADMIN+'/register', data = json.dumps(payload), headers = headers)).json()
-    if(response.status==200):
-        ret = {}
-        ret['redirecturl'] = '/dashboard'
-    ret['msg'] = response['msg']
-    return jsonify(ret)
+    response = (requests.post(ADMIN+'/register', data = json.dumps(payload), headers = headers))
+    # print(response, type(response))
+    # ret = {}
+    # ret['redirecturl'] = '/dashboard'
+    # ret['msg'] = response['msg']
+    return jsonify({"status": "OK"})
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     if(session['user_available']):
-	    return render_template('dashboard.html')
+	    return render_template('client_dashboard.html')
     return redirect(url_for('logout'))
 
 @app.route('/updateDashboard', methods=['GET'])
@@ -114,7 +115,7 @@ def unsubscribe():
     return redirect(url_for('logout'))
 
 @app.route('/partofGF', methods=['GET'])
-def unsubscribe():
+def partofGF():
     if(session['user_available']):
         location = get_location()
         payload = {
@@ -135,5 +136,5 @@ def logout():
 
 
 if __name__ == '__main__':	
-	application.debug=True
-	application.run(port=int(PORT))
+	app.debug=True
+	app.run(port=int(PORT))

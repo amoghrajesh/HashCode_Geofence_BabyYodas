@@ -28,6 +28,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///geofence.db'
 headers = {'Content-Type': 'application/json', 'Accept':'application/json'}
 session_options = {'autocommit':False, 'autoflush':False}
 db = SQLAlchemy(app)
+session1 = dict()
+session1['user_available'] = True
 
 ###################### db ###############################
 """
@@ -70,7 +72,7 @@ class Device(db.Model):
     __tablename__ = "device"
     d_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     device_id = db.Column(db.String(), unique=True, index=True)
-    port = db.Column(db.String(), unique=True, index=True)
+    port = db.Column(db.String(), index=True)
     joined_fences = db.Column(db.String())
     #optional, dynamic:
     latitude = db.Column(db.String()) 
@@ -112,53 +114,75 @@ def processLogin():
 """
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    if(session['user_available']):
-	    return render_template('dashboard.html')
+    if(session1['user_available']):
+	    return render_template('admin_dashboard.html')
     return redirect(url_for('logout'))
 
 #Do rest/ajax on this
 @app.route('/updateDashboard', methods=['GET'])
 def processDashboard():
-    if(session['user_available']):
+    if(session1['user_available']):
         resu = db.session.query(Geofence).all()
         ret = {}
         for row in resu:
-            devices = row['joined_devices'].split('#')
-            ret[resu['geof_id']] = []
+            devices = row.joined_devices.split('#')
+            print("dddddddddddddddddddddddddddddddd", devices)
+            ret[row.geof_id] = []
             for device_id in devices:
-                resp = db.session.query(Device).filter_by(device_id=device_id)    
-                port = resp['port']
+                resp = db.session.query(Device).filter_by(device_id=device_id).first()    
+                port = resp.port
                 #ping client for location
                 #(lat, lon) = pingClient(device_id)
                 payload = {'device_id': device_id}
-                response = (requests.post('localhost:'+port+'/ping', data = json.dumps(payload), headers = headers)).json()
+                print("port ------------------------", port)
+                response = (requests.post('http://127.0.0.1:'+ port + '/ping', data = json.dumps(payload), headers = headers)).json()
+                print("response ---------------", response)
                 lat, lon = response['location']
+                float_latitudes = [float(x) for x in row.latitudes.split('#')]
+                float_longitudes = [float(x) for x in row.longitudes.split('#')] 
                 ###########################################check lat, long #########################
-                (status, dist, coords) = GetStatus(row['type'], float(row['centroid']), float(row['latitudes']), float(row['longitudes']), float(row['boundary_buffer']), (lat, lon), float(row['radius']))
+                if row.fence_type == "circle":
+                    (status, dist, coords) = GetStatus(row.fence_type, ast.literal_eval(row.centroid), float_latitudes, float_longitudes, float(row.boundary_buffer), (lat, lon), float(row.radius))
+                else:
+                    (status, dist, coords) = GetStatus(row.fence_type, ast.literal_eval(row.centroid), float_latitudes, float_longitudes, float(row.boundary_buffer), (lat, lon), "")
                 if status==1:
                     dist = -dist
-                ret[resu['geof_id']].append([device_id, status, dist, list(coords)])
+                ret[row.geof_id].append([device_id, status, dist, list(coords)])
         return jsonify(ret)
     return redirect(url_for('logout'))
 
 @app.route('/createGfence', methods=['GET'])
 def createGfence():
-    if(session['user_available']):
-	    return render_template('geof.html')
+    if(session1['user_available']):
+	    return render_template('gmap.html')
     return redirect(url_for('logout'))
 
 @app.route('/processCreateGfence', methods=['POST'])
 def processCreateGfence():
-    if(session['user_available']):
+    if(session1['user_available']):
         ret = {}
         req = request.get_json()
         #admin_id = (request.form['admin_id']).strip()
-        geof_id = (req['geof_id']).strip()
-        shape = (req['type']).strip()
-        radius = (req['radius'])
+        geof_id = req['geof_id']
+        shape = req['type']
+        radius = req['radius']
         ##############################check what type
-        latitudes = req['latitudes']
-        longitudes = req['longitudes']
+        if shape != "circle":
+            latitude = []
+            longitude = []
+            locations = ast.literal_eval(req['locations'])
+            locations = list(locations)
+            # print(locations, type(locations))
+
+            for loc in locations:
+                latitude.append(loc[0])
+                longitude.append(loc[1])
+        else:
+            latitude = [req['latitude']]
+            longitude = [req['longitude']]
+        
+        latitudes = latitude
+        longitudes = longitude
         quer_res = db.session.query(Geofence).filter_by(geof_id = geof_id)
         if(quer_res.scalar() is None):
             #compute centroid and buffer distance
@@ -167,7 +191,7 @@ def processCreateGfence():
             #################################check type of lat and long before join
             str_latitudes = [str(x) for x in latitudes]
             str_longitudes = [str(x) for x in longitudes]
-            reg = Geofence(geof_id, shape, str(radius), str(centroid), "#".join(latitudes), "#".join(longitudes), "", str(buffer_dist))
+            reg = Geofence(randint(1, 100000), shape, str(radius), str(centroid), "#".join(str_latitudes), "#".join(str_longitudes), "", str(buffer_dist))
             db.session.add(reg)
             db.session.commit()
         else:
@@ -180,49 +204,58 @@ def logout():
     #session.clear()
     #session['user_available'] = False
     #session['current_user'] = ""
-    return redirect(url_for('home'))
+    return redirect('http://127.0.0.1:9999/')
 
 
 @app.route('/register', methods=['POST'])
 def registerDevice():
-    if(session['user_available']):
+    if(session1['user_available']):
         ret = {}
         req = request.get_json()
+        print("###########################################################################")
+        print(req)
         device_id = (req['device_id'])
         port = (req['port'])
         loc = req['location']
         quer_res = db.session.query(Device).filter_by(device_id = device_id)
         if(quer_res.scalar() is None):
-            reg = Device(device_id, port, "")
+            reg = Device(device_id, port, "", "", "", "")
             db.session.add(reg)
             db.session.commit()
-            return {"msg":"success!"}
+            print({"msg":"success!"})
+            return jsonify({"msg":"success!"})
         else:
-            return {"msg":"exists already!"}
-    return {"msg":"fail!"}, 400
+            print({"msg":"exists already!"})
+            return jsonify({"msg":"exists already!"})
+    return jsonify({"msg":"fail!"})
 
 @app.route('/nearestGFS', methods=['POST'])
 def nearestGFS():
-    if(session['user_available']):
+    if(session1['user_available']):
         geofences = {}
         req = request.get_json()
         x=0.0005
         resu = db.session.query(Geofence).all()
         for row in resu:
-            float_latitudes = [float(x) for x in row['latitudes']]
-            float_longitudes = [float(x) for x in row['longitudes']] 
-            geofences[row['geof_id']] = {'rad':float(radius), 'type':row['fence_type'] ,'centroid':float(row['centroid']), 'lat':float_latitudes ,'long': float_longitudes }
+            float_latitudes = [float(x) for x in row.latitudes.split('#')]
+            float_longitudes = [float(x) for x in row.longitudes.split('#')] 
+            
+            if row.fence_type != "circle":
+                geofences[row.geof_id] = {'centroid': ast.literal_eval(row.centroid), 'rad':"", 'type':row.fence_type , 'latitudes':float_latitudes ,'longitudes': float_longitudes }
+            else:
+                geofences[row.geof_id] = {'centroid': ast.literal_eval(row.centroid), 'rad':float(row.radius), 'type':row.fence_type, 'latitudes':float_latitudes ,'longitudes': float_longitudes }
+        
         ngfs = GetGeoFence(geofences, x, req['location'])
-        return {'results': ngfs}
-    return {'msg':'fail!'}
+        return jsonify({'results': ngfs})
+    return jsonify({'msg':'fail!'})
 
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
-    if(session['user_available']):
+    if(session1['user_available']):
         ret = {}
         req = request.get_json()
         quer_res = db.session.query(Geofence).filter_by(geof_id = req['geof_id']).first()
-        joined_devices = quer_res['joined_devices']
+        joined_devices = quer_res.joined_devices
         if(req['device_id'] in joined_devices):
             ret['msg'] = 'already subscribed!'
         else:
@@ -234,45 +267,54 @@ def subscribe():
             db.session.commit()
 
             quer_res = db.session.query(Device).filter_by(device_id=req['device_id']).first()            
-            fences_joined = quer_res['fences_joined']
+            fences_joined = quer_res.joined_fences
             if(len(fences_joined)==0):
                 new_fences_joined =  req['geof_id']
             else:
                 new_fences_joined = fences_joined+'#'+req['geof_id']
-            db.session.query(Device).filter_by(device_id=req['device_id']).update(dict(fences_joined=new_fences_joined))
+            db.session.query(Device).filter_by(device_id=req['device_id']).update(dict(joined_fences=new_fences_joined))
             db.session.commit()
             ret['msg'] = "subscribed!"
-        return ret
-    return {"msg":"failed!"}        
+        return jsonify(ret)
+    return jsonify({"msg":"failed!"})        
             
 @app.route('/unsubscribe', methods=['POST'])
 def unsubscribe():
-    if(session['user_available']):
+    if(session1['user_available']):
         ret = {}
         req = request.get_json()
         quer_res = db.session.query(Geofence).filter_by(geof_id = req['geof_id']).first()
-        joined_devices = ((quer_res['joined_fences']).split('#')).remove(req['device_id'])
+        joined_devices = ((quer_res.joined_devices).split('#')).remove(req['device_id'])
+        if len(joined_devices) == 0:
+            joined_devices = ''
+        else:
+            joined_devices = '#'.join(joined_devices)
         db.session.query(Geofence).filter_by(geof_id=req['geof_id']).update(dict(joined_devices=joined_devices))
         db.session.commit()
         quer_res = db.session.query(Device).filter_by(device_id = req['device_id']).first()
-        joined_fences = ((quer_res['fences_joined']).split('#')).remove(req['geof_id'])
-        db.session.query(Device).filter_by(device_id=req['device_id']).update(dict(fences_joined=fences_joined))
+        joined_fences = ((quer_res.joined_fences).split('#')).remove(req['geof_id'])
+
+        if len(joined_fences) == 0:
+            joined_fences = ''
+        else:
+            joined_fences = '#'.join(joined_fences)
+
+        db.session.query(Device).filter_by(device_id=req['device_id']).update(dict(joined_fences=joined_fences))
         db.session.commit()
-        return {"msg": "success!"}
-    return {'msg': 'fail!'}
+        return jsonify({"msg": "success!"})
+    return jsonify({'msg': 'fail!'})
 
 @app.route('/partofGF', methods=['POST'])
 def partofGF():
-    if(session['user_available']):
+    if(session1['user_available']):
         ret = {}
         req = request.get_json()
         quer_res = db.session.query(Device).filter_by(device_id=req['device_id']).first()            
-        fences_joined = (quer_res['fences_joined']).split('#')
+        fences_joined = (quer_res.fences_joined).split('#')
         ret['results'] = fences_joined
         return ret
-    return {'msg':'fail!'}
+    return jsonify({'msg':'fail!'})
 
 if __name__ == '__main__':
-    session['user_available'] = True	
-	application.debug=True
-	application.run(port=9999)
+    app.debug=True
+    app.run(port=9999)

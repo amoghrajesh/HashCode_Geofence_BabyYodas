@@ -26,7 +26,49 @@
                 }
                 xmlhttp.onreadystatechange = function () {
                     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                        alert(xmlhttp.responseText);
+                        var tbody = document.getElementById('tbody');
+                        tbody.innerHTML = "";
+                        var obj = JSON.parse(xmlhttp.responseText);
+
+                        for (var gf in obj) {
+                            var val = obj[gf];
+                            console.log(val);
+                            for (var c in val) {
+                                // row = tbody.insertRow();
+                                // row.insertCell().innerHTML = gf;
+                                // row.insertCell().innerHTML = client[0].toString();
+                                // row.insertCell().innerHTML = client[1].toString();
+                                // row.insertCell().innerHTML = client[2].toString();
+                                // row.insertCell().innerHTML = client[3].toString();
+
+                                client = val[c];
+
+
+                                var row = document.createElement("tr");
+                                var td1 = document.createElement("td");
+                                var td2 = document.createElement("td");
+                                var td3 = document.createElement("td");
+                                var td4 = document.createElement("td");
+                                var td5 = document.createElement("td");
+
+                                td1.innerHTML = gf;
+                                td2.innerHTML = client[0];
+                                td3.innerHTML = client[1];
+                                td4.innerHTML = client[2];
+                                td5.innerHTML = client[3];
+
+                                row.appendChild(td1);
+                                row.appendChild(td2);
+                                row.appendChild(td3);
+                                row.appendChild(td4);
+                                row.appendChild(td5);
+
+                                tbody.appendChild(row);
+
+                            }
+                        }
+
+
                     }
                 }
                 xmlhttp.open("GET", "http://127.0.0.1:9999/updateDashboard", true);
@@ -47,15 +89,8 @@
                     <th scope="col">Distance</th>
                     <th scope="col">Coordinates</th>
                   </tr>
-                  <tr>
-                      <td>1</td>
-                      <td>1</td>
-                      <td>Active/Inactive</td>
-                      <td>1.5</td>
-                      <td>(12.5657657, 78.109839)</td>
-                  </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody">
                 </tbody>
               </table>
         </div>

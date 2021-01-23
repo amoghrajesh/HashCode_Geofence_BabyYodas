@@ -4,7 +4,6 @@ import json
 import ast
 app = Flask(__name__)
 
-
 @app.route("/",methods=["GET"])
 def index_page():
     return render_template("gmap.html")
