@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <style>
+            .container{
+                margin-top:100px;
+            }
+            #delete {
+                margin-top: 5px;
+                margin-right: 100px;
+                padding: 20px;
+                transition-duration: 0.4s;
+            }
+            
+            #delete:hover {
+                background-color: green; /* Green */
+                color: white;
+            }
+        </style>
+        
+        <script>
+            function periodicRefresh() {
+                var xmlhttp;
+                if (window.XMLHttpRequest) {
+                    xmlhttp = new XMLHttpRequest();
+                }
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        alert(xmlhttp.responseText);
+                    }
+                }
+                xmlhttp.open("GET", "http://127.0.0.1:9999/updateDashboard", true);
+                xmlhttp.send();
+            }
+            periodicRefresh();
+            setInterval(periodicRefresh, 15000);
+        </script>
+    </head>
+    <body>  
+        <div class="container p-3 my-5 bg-default text-white">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Geofence ID</th>
+                    <th scope="col">Device ID</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Distance</th>
+                    <th scope="col">Coordinates</th>
+                  </tr>
+                  <tr>
+                      <td>1</td>
+                      <td>1</td>
+                      <td>Active/Inactive</td>
+                      <td>1.5</td>
+                      <td>(12.5657657, 78.109839)</td>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+        </div>
+
+        <center><button id="delete"><a href="http://127.0.0.1:9999/createGfence">Back To GMap</a></button></center>
+    </body>
+</html>

@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <style>
+            #delete {
+                margin-top: 5px;
+                padding: 10px;
+                transition-duration: 0.4s;
+            }
+            
+            #delete:hover {
+                background-color: red; 
+                color: white;
+            }
+
+            #save {
+                margin-top: 5px;
+                padding: 10px;
+                transition-duration: 0.4s;
+            }
+            
+            #save:hover {
+                background-color: #4CAF50; 
+                color: white;
+            }
+
+            #gfence {
+                margin-top: 5px;
+                padding: 10px;
+                transition-duration: 0.4s;
+            }
+            
+            #gfence:hover {
+                background-color: lightblue;
+                color: white;
+            }
+        </style>
+
+        <script>
+            // function ping() {
+            //     var xmlhttp;
+            //     if (window.XMLHttpRequest) {
+            //         xmlhttp = new XMLHttpRequest();
+            //     }
+            //     xmlhttp.onreadystatechange = function () {
+            //         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            //             alert(xmlhttp.responseText);
+            //         }
+            //     }
+            //     var data = {
+            //         "lat": 12.3454365,
+            //         "lng": 78.9088109
+            //     }
+            //     xmlhttp.open("POST", "http://127.0.0.1:5000/health", true);
+            //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            //     xmlhttp.send(JSON.stringify(data));
+            // }
+            // ping();
+            // setInterval(ping, 5000);
+
+            function getNearest(){
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        alert(xmlhttp.responseText);
+                    }
+                }
+                xmlhttp.open("GET", "http://127.0.0.1:5000/updateDashboard", true);
+                xmlhttp.send();
+            }
+
+            function subscribe(){
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        alert(xmlhttp.responseText);
+                    }
+                }
+                var data = {
+                    //get the dropdown selected item
+                }
+                xmlhttp.open("POST", "http://127.0.0.1:5000/subscribe", true);
+                xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xmlhttp.send(JSON.stringify(data));
+            }
+
+            function deregister(){
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        alert(xmlhttp.responseText);
+                    }
+                }
+                var data = {
+                    //get the dropdown selected item
+                }
+                xmlhttp.open("POST", "http://127.0.0.1:5000/unsubscribe", true);
+                xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xmlhttp.send(JSON.stringify(data));
+            }
+
+      </script>
+
+    </head>
+
+    <body>
+        <div class = "container p-3 my-5 bg-default text-black">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown
+                <!-- <span class="caret"></span></button> -->
+                <ul class="dropdown-menu">
+                    <li><a href="#">DUMMY</a></li>
+                    <li><a href="#">DUMMY</a></li>
+                    <li><a href="#">DUMMY</a></li>
+                </ul>
+            </div>
+            <br><br><br><br>
+            
+            <button id="gfence" onclick="getNearest()">Find Nearest Gfences</button>
+            <button id="delete" onclick="subscribe()">Subscribe</button>
+            <button id="save" onclick="deregister()">Deregister</button>
+        </div>
+    </body>
+</html>
