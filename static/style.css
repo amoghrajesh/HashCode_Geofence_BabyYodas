@@ -26,6 +26,15 @@
     cursor: pointer;
 }
 
-#delete-button {
+#delete {
     margin-top: 5px;
+}
+
+#delete {
+    transition-duration: 0.4s;
+  }
+  
+#delete:hover {
+    background-color: #4CAF50; /* Green */
+    color: white;
 }

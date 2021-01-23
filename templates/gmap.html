@@ -7,7 +7,60 @@
         <script type="text/javascript"
         src="http://maps.google.com/maps/api/js?sensor=false&libraries=drawing&key=AIzaSyDmsq_ekfwFQRgz67RcmYIjNo4xrm42sFE"></script>
         <link href="../static/style.css" rel="stylesheet">
-        
+        <style>
+            #map, html, body {
+                padding: 0;
+                margin: 0;
+                width: 960px;
+                height: 700px;
+            }
+
+            #panel {
+                width: 200px;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+                float: right;
+                margin: 10px;
+            }
+
+            #color-palette {
+                clear: both;
+            }
+
+            .color-button {
+                width: 14px;
+                height: 14px;
+                font-size: 0;
+                margin: 2px;
+                float: left;
+                cursor: pointer;
+            }
+
+            #delete {
+                margin-top: 5px;
+                margin-right: 100px;
+                padding: 20px;
+                transition-duration: 0.4s;
+            }
+            
+            #delete:hover {
+                background-color: red; /* Green */
+                color: white;
+            }
+
+            #save {
+                margin-top: 5px;
+                padding: 20px;
+                transition-duration: 0.4s;
+            }
+            
+            #save:hover {
+                background-color: #4CAF50; /* Green */
+                color: white;
+            }
+
+
+        </style>
         <script type="text/javascript">
             var drawingManager;
             var selectedShape;
@@ -168,12 +221,9 @@
      <br>
      </div>
     
-     <div>
-        <button id="delete">Delete Selected Shape</button>
-    </div>
+    <button id="delete">Delete Selected Shape</button>
 
-    <div>
-        <button id="save" onclick="saveJSON()">Save Drawm Fence</button>
-    </div>
+    <button id="save" onclick="saveJSON()">Save Drawn Fence</button>
+
     </body>
 </html>
