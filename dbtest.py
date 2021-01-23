@@ -14,3 +14,9 @@ result2 = engine.execute('SELECT * FROM "geofence"')
 
 for r2 in result2:
    print(r2)
+
+result3 = engine.execute('SELECT * FROM "admin"')
+#print(result.fetchall())
+
+for r3 in result3:
+   print(r3)
