@@ -10,8 +10,6 @@ result1 = engine.execute('SELECT * FROM "device"')
 for r1 in result1:
   print(r1)
 
-
-
 print("\nGeofence Table ----")
 result2 = engine.execute('SELECT * FROM "geofence"')
 #print(result.fetchall())

@@ -10,7 +10,7 @@ import requests
 import json
 import csv
 import collections
-from random import randint
+from random import randint, uniform
 from flask_api import status
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -30,7 +30,8 @@ PORT = "5000"
 ################# function ######################
 
 def get_location():
-    return [12.93630640508769, 77.5337771162133]
+    return [12.9331912453213, 77.54340132194]
+    # return [uniform(12.996800557961398, 12.91390750578042), uniform(77.45285487041474,77.59344553813935)]
 
 ################# apis ##########################
 

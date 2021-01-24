@@ -126,10 +126,15 @@ def processDashboard():
         ret = {}
         for row in resu:
             devices = row.joined_devices.split('#')
-            print("dddddddddddddddddddddddddddddddd", devices)
+            print("dddddddddddd", devices)
+            if devices == ['']:
+                return jsonify({" ": ""}) 
             ret[row.geof_id] = []
             for device_id in devices:
-                resp = db.session.query(Device).filter_by(device_id=device_id).first()    
+                resp = db.session.query(Device).filter_by(device_id=device_id).first() 
+                print("resp ----- ", resp)
+                if resp is None:
+                    return jsonify({"skip": "ok"})   
                 port = resp.port
                 #ping client for location
                 #(lat, lon) = pingClient(device_id)
@@ -314,6 +319,23 @@ def partofGF():
         ret['results'] = fences_joined
         return ret
     return jsonify({'msg':'fail!'})
+
+
+from MergeGeofence import *
+@app.route('/convexhull', methods=['GET']) #GET
+def convexhull():
+    if(session1['user_available']):
+        resu = db.session.query(Geofence).all()
+        ret = {}
+        for row in resu:
+            geof_id = row.geof_id
+            lat = row.latitudes
+            lon = row.longitudes
+            float_lat = [float(x) for x in lat.split('#')]
+            float_lon = [float(x) for x in lon.split('#')]
+            ret[geof_id] = {"Latitudes":float_lat, "Longitudes": float_lon}
+        merged_geof = merge(ret)
+        return merged_geof
 
 if __name__ == '__main__':
     app.debug=True

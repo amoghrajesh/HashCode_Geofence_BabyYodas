@@ -29,21 +29,13 @@
                         var tbody = document.getElementById('tbody');
                         tbody.innerHTML = "";
                         var obj = JSON.parse(xmlhttp.responseText);
-
+                        console.log(obj);
                         for (var gf in obj) {
                             var val = obj[gf];
                             console.log(val);
                             for (var c in val) {
-                                // row = tbody.insertRow();
-                                // row.insertCell().innerHTML = gf;
-                                // row.insertCell().innerHTML = client[0].toString();
-                                // row.insertCell().innerHTML = client[1].toString();
-                                // row.insertCell().innerHTML = client[2].toString();
-                                // row.insertCell().innerHTML = client[3].toString();
 
                                 client = val[c];
-
-
                                 var row = document.createElement("tr");
                                 var td1 = document.createElement("td");
                                 var td2 = document.createElement("td");

@@ -63,11 +63,24 @@
             #show_dashboard {
                 margin-top: 5px;
                 padding: 20px;
+                margin-right: 100px;
                 transition-duration: 0.4s;
             }
             
             #show_dashboard:hover {
                 background-color: lightblue; /* Green */
+                color: white;
+            }
+
+            #convexhull {
+                margin-top: 5px;
+                padding: 20px;
+                margin-right: 100px;
+                transition-duration: 0.4s;
+            }
+            
+            #convexhull:hover {
+                background-color: purple; /* Green */
                 color: white;
             }
 
@@ -93,6 +106,44 @@
                 if (selectedShape) {
                     selectedShape.setMap(null);
                 }
+            }
+
+            function getConvexHull(){
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(){
+                    if(this.readyState == 4 && this.status == 200){
+                        var obj = JSON.parse(xhr.responseText);
+                        var coords = [];
+                        for (var gf in obj) {
+
+                            var val = obj[gf];
+                            var lat = val.Latitudes;
+                            var long = val.Longitudes;
+                            for(i = 0; i < lat.length; i++){
+                                var o = {}
+                                o["lat"] = lat[i];
+                                o["lng"] = long[i];
+                                coords.push(o);
+                            }
+                        }
+                        console.log(coords);
+                        const bermudaTriangle = new google.maps.Polygon({
+                            paths: coords,
+                            strokeColor: "#FF0000",
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: "#FF0000",
+                            fillOpacity: 0.35,
+                        });
+                        bermudaTriangle.setMap(map);
+
+                        console.log("Done");
+                    }
+                }
+                var url = "http://127.0.0.1:9999/convexhull";
+                xhr.open("GET", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xhr.send();
             }
 
             function saveJSON(){
@@ -136,7 +187,7 @@
             function initialize() {
                 var latitude = 12.935381;
                 var longitude = 77.534850;
-                var map = new google.maps.Map(document.getElementById('map'), {
+                map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 18,
                     center: new google.maps.LatLng(latitude, longitude),
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -237,6 +288,9 @@
     <button id="save" onclick="saveJSON()">Save Drawn Fence</button>
 
     <button id="show_dashboard"><a href="http://127.0.0.1:5000/admin_dashboard">Show Dashboard</a></button>
+
+    <button id="convexhull" onclick="getConvexHull()">Convex Hull Geofence</button>
+
 
     </body>
 </html>
