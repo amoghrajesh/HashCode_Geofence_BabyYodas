@@ -2,12 +2,15 @@
 
 ### Problem Statement Number 
 PS4 Geofence
+<br>
+<br>
 
 ### Problem
 We aim to create a boundary within which we can monitor any device. Once this boundary is set up, the
 product/app can setup triggers, which can send a notification when an entity enters (or exits) the fence.
 Geofencing enables the creation of unique user experiences that are specific to the context of the
 location.
+<br>
 <br>
 
 ### Proposed Solution
@@ -16,6 +19,9 @@ latitude, longitude) and radius of the fence. Once this is created, any device e
 fence will be shown in the central dashboard and can be monitored. All the known devices will be
 periodically checked for their position to monitor if they are in/out of the fence.
 For the decentralized solution, we consider the convex hull of all the distributed masters.
+<br>
+<br>
+
 
 ### Working Principle
 The geofence will be set around a particular master node at a pre fixed radius.
